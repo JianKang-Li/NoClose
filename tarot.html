@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>塔罗牌抽取 - 三张牌无牌阵</title>
+  <link rel="shortcut icon" href="./tarot.png" type="image/x-icon">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #e6e6e6;
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      text-align: center;
+    }
+
+    header {
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      color: #f8f8f8;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: #a9a9a9;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .cards-container {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin: 40px 0;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      width: 180px;
+      height: 300px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front,
+    .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-front {
+      background: linear-gradient(45deg, #8a2387, #e94057, #f27121);
+      transform: rotateY(180deg);
+      padding: 15px;
+      flex-direction: column;
+    }
+
+    .card-back {
+      background-color: #222;
+      border: 3px solid #8a2387;
+      position: relative;
+    }
+
+    /* 修改后的卡牌背面样式 - 只有一个居中的星星 */
+    .card-back::before {
+      content: "";
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 15 L65 40 L90 45 L70 65 L75 90 L50 80 L25 90 L30 65 L10 45 L35 40 Z" fill="%238a2387"/></svg>');
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #fff;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-meaning {
+      font-size: 0.9rem;
+      color: #f0f0f0;
+      text-align: center;
+    }
+
+    .card-number {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .controls {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .btn {
+      background: linear-gradient(45deg, #8a2387, #e94057);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 1.1rem;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .page-link {
+      margin-top: 20px;
+      display: inline-block;
+      color: #e94057;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .page-link:hover {
+      color: #f27121;
+    }
+
+    .instructions {
+      margin-top: 40px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+    }
+
+    .instructions h2 {
+      margin-bottom: 15px;
+      color: #e94057;
+    }
+
+    .instructions p {
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 650px) {
+      .cards-container {
+        gap: 15px;
+      }
+
+      .card {
+        width: 140px;
+        height: 230px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>塔罗牌抽取</h1>
+      <p class="subtitle">三张牌无牌阵 - 过去、现在、未来</p>
+    </header>
+
+    <div class="cards-container">
+      <div class="card" data-card="1">
+        <div class="card-inner">
+          <div class="card-front">
+            <div class="card-number">1</div>
+            <div class="card-title">过去</div>
+            <p class="card-meaning">选择卡片查看含义</p>
+          </div>
+          <div class="card-back"></div>
+        </div>
+      </div>
+
+      <div class="card" data-card="2">
+        <div class="card-inner">
+          <div class="card-front">
+            <div class="card-number">2</div>
+            <div class="card-title">现在</div>
+            <p class="card-meaning">选择卡片查看含义</p>
+          </div>
+          <div class="card-back"></div>
+        </div>
+      </div>
+
+      <div class="card" data-card="3">
+        <div class="card-inner">
+          <div class="card-front">
+            <div class="card-number">3</div>
+            <div class="card-title">未来</div>
+            <p class="card-meaning">选择卡片查看含义</p>
+          </div>
+          <div class="card-back"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="draw-cards">抽取塔罗牌</button>
+      <a href="index.html" class="page-link">返回窗口关闭保护页面</a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const cards = document.querySelectorAll('.card')
+      const drawButton = document.getElementById('draw-cards')
+      let drawnCards = []
+
+      // 塔罗牌数据
+      const tarotCards = [
+        { name: "愚者", meaning: "新的开始，冒险，自由天性" },
+        { name: "魔术师", meaning: "创造力，技能，自信" },
+        { name: "女祭司", meaning: "直觉，无意识，内在声音" },
+        { name: "女皇", meaning: "丰饶， nurturing ，感性" },
+        { name: "皇帝", meaning: "权威，结构，稳定" },
+        { name: "教皇", meaning: "传统，信仰，精神指导" },
+        { name: "恋人", meaning: "关系，选择，和谐" },
+        { name: "战车", meaning: "控制，意志力，胜利" },
+        { name: "力量", meaning: "勇气，耐心，控制情感" },
+        { name: "隐士", meaning: "内省，孤独，寻求真理" },
+        { name: "命运之轮", meaning: "命运，转折点，机遇" },
+        { name: "正义", meaning: "公平，真理，因果" },
+        { name: "倒吊人", meaning: "牺牲，新视角，放手" },
+        { name: "死神", meaning: "结束，转变，新的开始" },
+        { name: "节制", meaning: "平衡，调和，耐心" },
+        { name: "恶魔", meaning: "束缚，物质主义，欲望" },
+        { name: "塔", meaning: "剧变，启示，觉醒" },
+        { name: "星星", meaning: "希望，信仰，灵感" },
+        { name: "月亮", meaning: "幻觉，焦虑，潜意识" },
+        { name: "太阳", meaning: "成功，喜悦，活力" },
+        { name: "审判", meaning: "反思，重生，内在召唤" },
+        { name: "世界", meaning: "完成，成就，旅行" }
+      ]
+
+      // 初始化
+      resetCards();
+
+      // 抽取卡片
+      drawButton.addEventListener('click', function () {
+        resetCards()
+
+        // 随机选择三张不同的牌
+        drawnCards = []
+        while (drawnCards.length < 3) {
+          const randomIndex = Math.floor(Math.random() * tarotCards.length)
+          if (!drawnCards.includes(randomIndex)) {
+            drawnCards.push(randomIndex)
+          }
+        }
+
+        // 为每张卡分配数据
+        cards.forEach((card, index) => {
+          const cardData = tarotCards[drawnCards[index]]
+          const cardFront = card.querySelector('.card-front')
+
+          // 更新卡片内容
+          setTimeout(() => {
+            card.querySelector('.card-title').textContent = cardData.name
+            card.querySelector('.card-meaning').textContent = cardData.meaning
+          }, 800)
+        })
+
+        // 翻转卡片
+        setTimeout(() => {
+          cards.forEach(card => {
+            card.classList.add('flipped');
+          })
+        }, 500)
+      })
+
+      // 点击卡片翻转
+      cards.forEach(card => {
+        card.addEventListener('click', function () {
+          if (drawnCards.length > 0) {
+            this.classList.toggle('flipped')
+          }
+        })
+      })
+
+      // 重置卡片
+      function resetCards() {
+        cards.forEach(card => {
+          card.classList.remove('flipped')
+
+          const cardFront = card.querySelector('.card-front')
+          card.querySelector('.card-title').textContent =
+            card.getAttribute('data-card') === '1' ? '过去' :
+              card.getAttribute('data-card') === '2' ? '现在' : '未来'
+          card.querySelector('.card-meaning').textContent = '选择卡片查看含义'
+        })
+
+        drawnCards = []
+      }
+    })
+  </script>
+</body>
+
+</html>
