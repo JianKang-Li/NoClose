@@ -150,6 +150,10 @@
       align-items: center;
     }
 
+    .btns {
+      display: flex;
+    }
+
     .btn {
       background: linear-gradient(45deg, #8a2387, #e94057);
       color: white;
@@ -160,6 +164,7 @@
       cursor: pointer;
       transition: transform 0.3s, box-shadow 0.3s;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      margin: 0 20px;
     }
 
     .btn:hover {
@@ -169,6 +174,53 @@
 
     .btn:active {
       transform: translateY(1px);
+    }
+
+    .question-input {
+      margin-bottom: 20px;
+      padding: 12px 20px;
+      width: 100%;
+      max-width: 400px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(138, 35, 135, 0.5);
+      border-radius: 30px;
+      color: #e6e6e6;
+      font-size: 1rem;
+      transition: border-color 0.3s, background-color 0.3s;
+    }
+
+    .question-input:focus {
+      outline: none;
+      border-color: #e94057;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .question-input::placeholder {
+      color: #a9a9a9;
+    }
+
+    /* 气泡提示样式 */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      transform: translateX(100%);
+      /* 初始位置在右侧屏幕外 */
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 4px;
+      font-size: 1rem;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(0);
+      /* 显示时移动到右侧位置 */
     }
 
     .page-link {
@@ -262,16 +314,37 @@
     </div>
 
     <div class="controls">
-      <button class="btn" id="draw-cards">抽取塔罗牌</button>
+      <input type="text" class="question-input" id="questionInput" placeholder="输入您的问题...">
+      <div class="btns">
+        <button class="btn" id="draw-cards">抽取塔罗牌</button>
+        <button class="btn" id="copy">复制结果</button>
+      </div>
       <a href="index.html" class="page-link">返回窗口关闭保护页面</a>
     </div>
   </div>
+
+  <!-- 气泡提示元素 -->
+  <div class="toast" id="toast"></div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const cards = document.querySelectorAll('.card')
       const drawButton = document.getElementById('draw-cards')
+      const copyButton = document.querySelector('#copy')
+      const questionInput = document.getElementById('questionInput')
+      const toast = document.getElementById('toast')
       let drawnCards = []
+      let userQuestion = ''
+
+      // 显示气泡提示函数
+      function showToast(message, duration = 2000) {
+        toast.textContent = message
+        toast.classList.add('show')
+
+        setTimeout(() => {
+          toast.classList.remove('show')
+        }, duration)
+      }
 
       // 塔罗牌数据
       const tarotCards = [
@@ -304,6 +377,8 @@
 
       // 抽取卡片
       drawButton.addEventListener('click', function () {
+        // 获取用户输入的问题
+        userQuestion = questionInput.value.trim() || ''
         resetCards()
 
         // 随机选择三张不同的牌
@@ -358,6 +433,28 @@
 
         drawnCards = []
       }
+
+      copyButton.addEventListener('click', () => {
+        if (!drawnCards.length) {
+          showToast('请先输入问题并抽取卡牌')
+        } else if (!userQuestion) {
+          showToast('请先输入问题')
+        }
+        let template = `你是一个塔罗牌解牌者，可以根据用户给出的塔罗牌及提问给出相对于的解释；问题：${userQuestion} 使用牌阵：三张牌无牌阵 抽出的牌：正位 %s 逆位 %s 正位 %s`
+
+        cards.forEach((card, index) => {
+          const cardData = tarotCards[drawnCards[index]]
+
+          template = template.replace('%s', cardData.name)
+        })
+
+        navigator.clipboard.writeText(template).then(() => {
+          showToast('复制成功！')
+        }).catch(err => {
+          showToast('复制失败，请重试')
+          console.error('复制失败:', err)
+        })
+      })
     })
   </script>
 </body>
